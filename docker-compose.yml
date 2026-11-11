@@ -1,0 +1,77 @@
+services:
+  demo-app:
+    build: ./app
+    container_name: charge-demo-app
+    ports:
+      - "8000:8000"
+    environment:
+      - LOAD_LEVEL=0.35
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  cadvisor:
+    image: ghcr.io/google/cadvisor:v0.60.6
+    container_name: charge-cadvisor
+    ports:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    privileged: true
+    devices:
+      - /dev/kmsg
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: charge-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --web.enable-lifecycle
+    depends_on:
+      - demo-app
+      - cadvisor
+
+  predictor:
+    build: ./predictor
+    container_name: charge-predictor
+    environment:
+      - PROMETHEUS_URL=http://prometheus:9090
+      - POLL_SECONDS=15
+      - FORECAST_SECONDS=60
+    ports:
+      - "9100:9100"
+    depends_on:
+      - demo-app
+      - prometheus
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: charge-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+
+volumes:
+  prometheus_data:
+  grafana_data:

@@ -1,0 +1,8 @@
+# Personal collection outputs are ignored; curated shared datasets can be committed.
+data/raw/collecte_*.csv
+data/processed/*.csv
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+__pycache__/
+*.py[cod]
+.env

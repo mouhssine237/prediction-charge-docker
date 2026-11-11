@@ -1,0 +1,622 @@
+{
+  "uid": "charge-docker-ml",
+  "title": "Docker | Observabilité & prévision",
+  "description": "Supervision et prévision Random Forest basées sur les métriques réelles cAdvisor de charge-demo-app.",
+  "tags": [
+    "docker",
+    "cadvisor",
+    "prometheus",
+    "ml"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 3,
+  "refresh": "15s",
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "container",
+        "label": "Conteneur Docker",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "definition": "label_values(container_memory_working_set_bytes{job=\"cadvisor\",name!=\"\"}, name)",
+        "query": {
+          "query": "label_values(container_memory_working_set_bytes{job=\"cadvisor\",name!=\"\"}, name)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 1,
+        "sort": 1,
+        "multi": false,
+        "includeAll": false,
+        "current": {
+          "selected": true,
+          "text": "charge-demo-app",
+          "value": "charge-demo-app"
+        },
+        "options": []
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "row",
+      "title": "Vue d'ensemble",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "CPU réel du conteneur",
+      "description": "Mesure cAdvisor du CPU de charge-demo-app, en pourcentage CPU.",
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 1
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "rate(container_cpu_usage_seconds_total{job=\"cadvisor\",name=\"charge-demo-app\",cpu=\"total\"}[1m]) * 100",
+          "legendFormat": "CPU réel"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 70
+              },
+              {
+                "color": "red",
+                "value": 85
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "value",
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center"
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "RAM réelle du conteneur",
+      "description": "Working set RAM mesuré par cAdvisor pour charge-demo-app.",
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 1
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "container_memory_working_set_bytes{job=\"cadvisor\",name=\"charge-demo-app\"} / 1024 / 1024",
+          "legendFormat": "RAM réelle"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "mebibytes",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 450
+              },
+              {
+                "color": "red",
+                "value": 550
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "value",
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center"
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "État de collecte cAdvisor",
+      "description": "1 signifie que Prometheus scrape la cible cAdvisor; cela ne garantit pas la présence des séries individuelles.",
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 1
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "up{job=\"cadvisor\"}",
+          "legendFormat": "cAdvisor UP"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "value_and_name",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center"
+      }
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Prévision prête",
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 1
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "prediction_model_ready",
+          "legendFormat": "Random Forest"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "orange",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "value_and_name",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center"
+      }
+    },
+    {
+      "id": 6,
+      "type": "row",
+      "title": "Application | mesures et prévisions",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "CPU réel et prévision à +60 s",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 6
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "rate(container_cpu_usage_seconds_total{job=\"cadvisor\",name=\"charge-demo-app\",cpu=\"total\"}[1m]) * 100",
+          "legendFormat": "CPU réel cAdvisor"
+        },
+        {
+          "expr": "predicted_cpu_percent",
+          "legendFormat": "CPU prévu +60 s"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 12,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "RAM réelle et prévision à +60 s",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 6
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "container_memory_working_set_bytes{job=\"cadvisor\",name=\"charge-demo-app\"} / 1024 / 1024",
+          "legendFormat": "RAM réelle cAdvisor"
+        },
+        {
+          "expr": "predicted_memory_mb",
+          "legendFormat": "RAM prévue +60 s"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "mebibytes",
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 12,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 9,
+      "type": "row",
+      "title": "cAdvisor | cgroups exposés",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 14
+      },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "CPU réel par conteneur (cAdvisor)",
+      "description": "CPU réel issu des métriques cAdvisor. Le menu Conteneur filtre par le label name.",
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 15
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "rate(container_cpu_usage_seconds_total{job=\"cadvisor\",name=\"$container\",cpu=\"total\"}[1m]) * 100",
+          "legendFormat": "{{name}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 8,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 11,
+      "type": "timeseries",
+      "title": "RAM réelle par conteneur (cAdvisor)",
+      "description": "Mémoire working set réelle en MiB. Le menu Conteneur filtre par le label name.",
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 15
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "container_memory_working_set_bytes{job=\"cadvisor\",name=\"$container\"} / 1024 / 1024",
+          "legendFormat": "{{name}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "mebibytes",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      }
+    },
+    {
+      "id": 12,
+      "type": "timeseries",
+      "title": "Mémoire Docker agrégée",
+      "description": "Cgroup parent /docker actuellement publié par cAdvisor; ne pas interpréter comme la RAM de l'application seule.",
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 24
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "container_memory_working_set_bytes{job=\"cadvisor\",id=\"/docker\"} / 1024 / 1024",
+          "legendFormat": "Groupe /docker"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "mebibytes",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      }
+    },
+    {
+      "id": 13,
+      "type": "timeseries",
+      "title": "CPU Docker agrégé",
+      "description": "Cgroup parent /docker; distinct de la consommation individuelle d'un conteneur.",
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 24
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "rate(container_cpu_usage_seconds_total{job=\"cadvisor\",id=\"/docker\",cpu=\"total\"}[1m]) * 100",
+          "legendFormat": "Groupe /docker"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      }
+    }
+  ]
+}

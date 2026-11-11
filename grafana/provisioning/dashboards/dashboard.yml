@@ -1,0 +1,10 @@
+apiVersion: 1
+providers:
+  - name: Charge Docker
+    orgId: 1
+    folder: Projet
+    type: file
+    disableDeletion: false
+    editable: true
+    options:
+      path: /var/lib/grafana/dashboards
